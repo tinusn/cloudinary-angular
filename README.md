@@ -30,7 +30,7 @@ Download [cloudinary-angular.min.js](https://raw.githubusercontent.com/tinusn/cl
 Include it in your module declaration
 
 ```javascript
-angular.module('myApp', ['ui.router', 'cloudinary']);
+angular.module('myApp', ['cloudinary']);
 ```
 
 ## To build
