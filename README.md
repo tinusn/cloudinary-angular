@@ -33,6 +33,22 @@ Include it in your module declaration
 angular.module('myApp', ['cloudinary']);
 ```
 
+And finally configure it. Then you are ready to use the directives
+```javascript
+/* @ngInject */
+function configure(CloudinaryProvider) {    
+    CloudinaryProvider.configure({
+        cloud_name: 'your cloud name'
+        api_key: 'your api key'
+    });
+        
+}
+
+angular
+    .module('helpfully')
+    .config(configure);
+```
+
 ## To build
 Install nodejs and the following packages globally:
 * gulp
