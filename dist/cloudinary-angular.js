@@ -20,7 +20,6 @@ var cloudinary;
                         attributes[cloudinary.cloudinaryAttr(name)] = value;
                     });
                     var url = cloudinary.cloudinary_url(publicId, attributes, Cloudinary.config);
-                    $log.debug('url', url);
                     angular.element(element)[0].style['background-image'] = "url('" + url + "')";
                     angular.element(element)[0].style['background-color'] = 'transparent';
                     angular.element(element)[0].style['background-repeat'] = 'no-repeat';

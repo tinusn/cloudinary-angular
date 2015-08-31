@@ -15,7 +15,6 @@ namespace cloudinary {
 					});
 
 					var url = cloudinary_url(publicId, attributes, Cloudinary.config);
-					$log.debug('url', url);
 					
 					angular.element(element)[0].style['background-image'] = `url('${url}')`;
 					angular.element(element)[0].style['background-color'] = 'transparent';
