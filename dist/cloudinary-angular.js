@@ -125,10 +125,14 @@ var cloudinary;
         Cloudinary.prototype.configure = function (newConfig) {
             this.config = newConfig;
         };
+        Cloudinary.prototype.cloudinary_url = function (public_id, options) {
+            return cloudinary.cloudinary_url(public_id, options, this.config);
+        };
         Cloudinary.prototype.$get = function () {
             return {
                 config: this.config,
-                configure: this.configure
+                configure: this.configure,
+                cloudinary_url: this.cloudinary_url
             };
         };
         return Cloudinary;

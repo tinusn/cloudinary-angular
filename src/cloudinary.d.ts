@@ -2,6 +2,7 @@ declare namespace cloudinary {
 	interface IProvider {
 		config: Config;
 		configure: Function;
+		cloudinary_url: Function;
 	}
 
 	interface Config {

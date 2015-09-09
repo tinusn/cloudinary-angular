@@ -13,10 +13,15 @@ namespace cloudinary {
 			this.config = newConfig;
 		}
 
+		cloudinary_url(public_id, options) {
+			return cloudinary_url(public_id, options, this.config);
+		}
+
 		public $get(): cloudinary.IProvider {
 			return {
 				config: this.config,
-				configure: this.configure
+				configure: this.configure,
+				cloudinary_url: this.cloudinary_url
 			}
 		}
 	}
