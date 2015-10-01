@@ -44,7 +44,7 @@ function configure(CloudinaryProvider) {
 }
 
 angular
-    .module('helpfully')
+    .module('myapp')
     .config(configure);
 ```
 
