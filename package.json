@@ -1,6 +1,6 @@
 {
   "name": "cloudinary-angular",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Cloudinary Angular module",
   "main": "cloudinary-angular",
   "author": "Tinus Aamand Norstved",
