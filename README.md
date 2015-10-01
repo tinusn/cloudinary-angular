@@ -41,12 +41,22 @@ function configure(CloudinaryProvider) {
         cloud_name: 'your cloud name'
         api_key: 'your api key'
     });
-        
 }
 
 angular
     .module('helpfully')
     .config(configure);
+```
+
+You can also inject a service and use that to get the public url
+
+```javascript
+/* @ngInject */
+function Somecontroller(Cloudinary) {
+    //Cloudinary.cloudinary_url('picture_id', options);
+    var publicUrl = Cloudinary.cloudinary_url('babsdasda', { format: 'jpg', height: '512', width: '1024', crop: 'limit' });
+}
+
 ```
 
 ## To build
