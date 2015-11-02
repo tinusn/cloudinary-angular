@@ -1,5 +1,290 @@
+/**
+ * A pure angular version of the cloudinary_angular plugin including a few new directives not found in the official library.
+ * 
+ * Based on cloudinary_js version 1.0.25 and cloudinary_angular version 0.1.4
+ */
 namespace cloudinary {
-	export function cloudinaryAttr(attr) {
+	const appModule = angular.module('cloudinary', []);
+
+	export interface Service {
+		configure: Function;
+		url: Function;
+		video_url: Function;
+		video_thumbnail_url: Function;
+	}
+
+	export interface Config {
+		cloud_name: string;
+		api_key: string;
+		private_cdn?: string;
+		secure_distribution?: string;
+		cname?: string;
+		cdn_subdomain?: string;
+		secure_cdn_subdomain?: string;
+		shorten?: boolean;
+		protocol?: string;
+		use_root_path?: boolean;
+	}
+
+	function Cloudinary(): angular.IServiceProvider {
+		let config: cloudinary.Config = {
+			cloud_name: '',
+			api_key: ''
+		};
+
+		const provider = {
+			configure: function(newConfig: cloudinary.Config) {
+				config = newConfig;
+			},
+			$get: function() {
+				return {
+					url: url,
+					video_url: video_url,
+					video_thumbnail_url: video_thumbnail_url
+				}
+			}
+		};
+
+		return provider;
+
+		function url(public_id, options) {
+			options = angular.extend({}, options);
+			return cloudinary_url(public_id, options, config);
+		}
+
+		function video_url(public_id, options) {
+			options = angular.extend({ resource_type: 'video' }, options);
+			return cloudinary_url(public_id, options, config);
+		}
+
+		function video_thumbnail_url(public_id, options) {
+			options = angular.extend({}, DEFAULT_POSTER_OPTIONS, options);
+			return cloudinary_url(public_id, options, config);
+		}
+	}
+
+	appModule.provider('Cloudinary', Cloudinary);
+
+	function getAttributes(attrs) {
+		const attributes: any = {};
+
+		angular.forEach(attrs, function(value, name) {
+			if (typeof name === 'string') {
+				attributes[cloudinaryAttr(name)] = value;
+			}
+		});
+
+		return attributes;
+	}
+		
+	/* @ngInject */
+	function clImage(Cloudinary: cloudinary.Service) {
+		return {
+			restrict: 'E',
+			replace: true,
+			transclude: true,
+			template: '<img ng-transclude/>',
+			scope: {},
+			priority: 99,
+			controller: function($scope) {
+				this.addTransformation = function(ts) {
+					$scope.transformations = $scope.transformations || [];
+					$scope.transformations.push(ts);
+				}
+			},
+			link: function(scope, element, attrs) {
+				const attributes = getAttributes(attrs);
+
+				if (scope.transformations) {
+					attributes.transformation = scope.transformations;
+				}
+
+				const deregisterObserver = attrs.$observe('publicId', function(publicId) {
+					if (!publicId) return;
+					element.attr('src', Cloudinary.url(publicId, attributes));
+					//deregisterObserver();
+				});
+
+				if (attrs.htmlWidth) {
+					element.attr("width", attrs.htmlWidth);
+				} else {
+					element.removeAttr("width");
+				}
+				if (attrs.htmlHeight) {
+					element.attr("height", attrs.htmlHeight);
+				} else {
+					element.removeAttr("height");
+				}
+			}
+		};
+	}
+
+	appModule.directive('clImage', clImage);
+		
+	/* @ngInject */
+	function clTransformation() {
+		return {
+			restrict: 'E',
+			transclude: false,
+			require: '^clImage',
+			link: function(scope, element, attrs, clImageCtrl) {
+				const attributes = getAttributes(attrs);
+				clImageCtrl.addTransformation(attributes);
+			}
+		};
+	}
+
+	appModule.directive('clTransformation', clTransformation);
+
+	['Src', 'Srcset', 'Href'].forEach(function(attrName) {
+		const normalized = 'cl' + attrName;
+		attrName = attrName.toLowerCase();
+		
+		/* @ngInject */
+		function srcSetHref($sniffer, Cloudinary: cloudinary.Service) {
+			return {
+				priority: 99, // it needs to run after the attributes are interpolated
+				link: function(scope, element, attrs) {
+					let propName = attrName,
+						name = attrName;
+
+					if (attrName === 'href' &&
+						toString.call(element.prop('href')) === '[object SVGAnimatedString]') {
+						name = 'xlinkHref';
+						attrs.$attr[name] = 'xlink:href';
+						propName = null;
+					}
+
+					attrs.$observe(normalized, function(publicId) {
+						if (!publicId) return;
+
+						const attributes = getAttributes(attrs);
+						let url;
+						if (attrName === 'srcset') {
+							let srcsetUrls = publicId.split(',');
+							let cloudinaryUrls = [];
+							srcsetUrls.map(function(srcsetUrl) {
+								srcsetUrl = srcsetUrl.trim();
+								let parts = srcsetUrl.split(' ');
+								if (parts.length === 2) {
+									cloudinaryUrls.push(Cloudinary.url(parts[0], attributes) + ' ' + parts[1]);
+								} else {
+									cloudinaryUrls.push(Cloudinary.url(srcsetUrl, attributes));
+								}
+							});
+							url = cloudinaryUrls.join(', ');
+							//url = Cloudinary.url(publicId, attributes);
+							
+						} else {
+							url = Cloudinary.url(publicId, attributes);
+						}
+
+						attrs.$set(name, url);
+
+						// on IE, if "ng:src" directive declaration is used and "src" attribute doesn't exist
+						// then calling element.setAttribute('src', 'foo') doesn't do anything, so we need
+						// to set the property as well to achieve the desired effect.
+						// we use attr[attrName] value since $set can sanitize the url.
+						if ($sniffer.msie && propName) element.prop(propName, attrs[name]);
+					});
+				}
+			};
+		}
+
+		appModule.directive(normalized, srcSetHref);
+	});
+	
+	/* @ngInject */
+	function clBackgroundImage(Cloudinary: cloudinary.Service) {
+		return {
+			restrict: 'A',
+			scope: {},
+			priority: 99,
+			link: function(scope, element, attrs) {
+				const deregisterObserver = attrs.$observe('clBackgroundImage', function(publicId) {
+					if (!publicId) return;
+
+					const attributes = getAttributes(attrs);
+					const url = Cloudinary.url(publicId, attributes);
+
+					angular.element(element)[0].style['background-image'] = `url('${url}')`;
+					angular.element(element)[0].style['background-color'] = 'transparent';
+					angular.element(element)[0].style['background-repeat'] = 'no-repeat';
+					angular.element(element)[0].style['background-position'] = 'center';
+					angular.element(element)[0].style['background-size'] = 'cover';
+					//deregisterObserver();
+				});
+			}
+		};
+	}
+
+	appModule.directive('clBackgroundImage', clBackgroundImage);
+	
+	/* @ngInject */
+	function clVideo(Cloudinary: cloudinary.Service) {
+		return {
+			restrict: 'E',
+			replace: true,
+			transclude: true,
+			template: '<video ng-transclude></video>',
+			scope: {},
+			priority: 99,
+			controller: function($scope) {
+				this.addTransformation = function(ts) {
+					$scope.transformations = $scope.transformations || [];
+					$scope.transformations.push(ts);
+				}
+			},
+			link: function(scope, element, attrs) {
+				const attributes = getAttributes(attrs);
+
+				if (scope.transformations) {
+					attributes.transformation = scope.transformations;
+				}
+
+				const deregisterObserver = attrs.$observe('publicId', function(publicId) {
+					if (!publicId) return;
+					
+					if (!attributes.hasOwnProperty('poster')) {
+						element.attr('poster', Cloudinary.video_thumbnail_url(publicId, attributes));
+					}
+					
+					attributes['format'] = 'webm';
+					const webm = angular.element(`<source src="${Cloudinary.video_url(publicId, attributes) }" type="video/webm" />`)
+					element.append(webm);
+					attributes['format'] = 'mp4';
+					const mp4 = angular.element(`<source src="${Cloudinary.video_url(publicId, attributes) }" type="video/mp4" />`)
+					element.append(mp4);
+					attributes['format'] = 'ogg';
+					const ogg = angular.element(`<source src="${Cloudinary.video_url(publicId, attributes) }" type="video/ogg" />`)
+					element.append(ogg);
+					//deregisterObserver();
+				});
+			}
+		};
+	}
+
+	appModule.directive('clVideo', clVideo);
+	
+	/**
+	 * http://cloudinary.com/documentation/video_manipulation_and_delivery#video_transformations_reference
+	 */
+	/* @ngInject */
+	function clVideoTransformation() {
+		return {
+			restrict: 'E',
+			transclude: false,
+			require: '^clVideo',
+			link: function(scope, element, attrs, clVideoCtrl) {
+				const attributes = getAttributes(attrs);
+				clVideoCtrl.addTransformation(attributes);
+			}
+		};
+	}
+
+	appModule.directive('clVideoTransformation', clVideoTransformation);
+
+	function cloudinaryAttr(attr) {
 		if (attr.match(/cl[A-Z]/)) attr = attr.substring(2);
 		return attr.replace(/([a-z])([A-Z])/g, '$1_$2').toLowerCase();
 	};
@@ -433,7 +718,9 @@ namespace cloudinary {
 		return prefix;
 	}
 
-	export function cloudinary_url(public_id, options, config: cloudinary.Config) {
+	function cloudinary_url(public_id, options, config: cloudinary.Config) {
+		if (!public_id) return public_id;
+
 		options = options || {};
 		var type = option_consume(options, 'type', 'upload');
 		if (type == 'fetch') {
@@ -490,5 +777,9 @@ namespace cloudinary {
 		var url = [prefix, resource_type_and_type, transformation, version ? "v" + version : "",
 			public_id].join("/").replace(/([^:])\/+/g, '$1/');
 		return url;
+	}
+
+	function default_stoppoints(width) {
+		return 10 * Math.ceil(width / 10);
 	}
 }

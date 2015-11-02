@@ -1,0 +1,68 @@
+<!doctype html>
+<html ng-app="myApp">
+
+<head>
+	<meta charset="utf-8">
+	<title>Cloudinary Angular Sample</title>
+	<link type="text/css" rel="stylesheet" media="all" href="app.css">
+	<link rel="shortcut icon" cl-href="sample" effect="sepia" width="16" height="16" crop="fit" />
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.7/angular.min.js"></script>
+	<script src="../dist/cloudinary-angular.js"></script>
+	<script src="app.js"></script>
+</head>
+
+<body ng-controller="SampleController">
+	<h1>Service</h1>
+	<ul>
+		<li>url: {{url}}</li>
+		<li>video_url: {{video_url}}</li>
+		<li>video_thumbnail_url: {{video_thumbnail_url}}</li>
+	</ul>
+
+	<h1>Directives</h1>
+
+	<h2>cl-href</h2>
+	<a cl-href="sample" format="jpg" target="_blank">Sample</a>
+
+	<h2>cl-src and cl-srcset</h2>
+	<img cl-src="sample" height="80" width="80" format="jpg">
+	<img cl-src="sample" cl-srcset="sample, sample" height="80" width="80" format="jpg">
+	<img cl-src="sample" cl-srcset="sample 1x, sample 2x" height="80" width="80" format="jpg">
+
+	<h2>cl-image and cl-transformation</h2>
+	<cl-image public-id="sample" format="jpg">
+		<cl-transformation height="80" width="80" crop="thumb" gravity="face" radius="max" border="2px_solid_rgb:00390b60" />
+	</cl-image>
+	<h3>Facebook</h3>
+	<cl-image public-id="billclinton.jpg" type="facebook">
+	</cl-image>
+	<cl-image public-id="65646572251.jpg" type="facebook">
+	</cl-image>
+
+	<h3>Twitter</h3>
+	<cl-image public-id="billclinton.jpg" type="twitter_name">
+	</cl-image>
+	<cl-image public-id="18913373.jpg" type="twitter">
+	</cl-image>
+	<h3>Gravatar</h3>
+	<cl-image public-id="205e460b479e2e5b48aec07710c08d50" type="gravatar">
+	</cl-image>
+
+	<h2>cl-background-image</h2>
+	<div class="image" cl-background-image="sample" format="jpg" crop="fill" gravity="center" quality="50">
+	</div>
+
+	<h2>cl-video</h2>
+	<h3>Poster from the video</h3>
+	<cl-video public-id="SampleVideo" preload="none" controls>
+		Your browser does not support the <code>video</code> element.
+		<cl-video-transformation height="300" width="300" crop="pad" background="blue" />
+	</cl-video>
+	<h3>Specific poster</h3>
+	<cl-video public-id="SampleVideo" poster="http://res.cloudinary.com/dklsomzcw/image/upload/h_300,w_300/sample.jpg" preload="none" controls>
+		Your browser does not support the <code>video</code> element.
+		<cl-video-transformation height="300" width="300" crop="pad" background="blue" />
+	</cl-video>
+</body>
+
+</html>
