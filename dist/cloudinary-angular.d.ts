@@ -1,3 +1,8 @@
+/**
+ * A pure angular version of the cloudinary_angular plugin including a few new directives not found in the official library.
+ *
+ * Based on cloudinary_js version 1.0.25 and cloudinary_angular version 0.1.4
+ */
 declare namespace cloudinary {
     interface Service {
         configure: Function;
