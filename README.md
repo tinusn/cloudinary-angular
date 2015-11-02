@@ -10,7 +10,7 @@ $ npm install --save cloudinary-angular
 Include the script in your index file
 
 ```html
-<script src="node_modules/dist/cloudinary-angular.min.js"></script>
+<script src="node_modules/cloudinary-angular/dist/cloudinary-angular.min.js"></script>
 ```
 
 Configure it
