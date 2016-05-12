@@ -21,7 +21,7 @@ angular.module('myApp', ['cloudinary']);
 /* @ngInject */
 function configure(CloudinaryProvider) {    
     CloudinaryProvider.configure({
-        cloud_name: 'your cloud name'
+        cloud_name: 'your cloud name',
         api_key: 'your api key'
     });
 }
