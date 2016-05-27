@@ -2,7 +2,7 @@
   "name": "cloudinary-angular",
   "version": "1.0.0",
   "description": "Cloudinary Angular module",
-  "main": "cloudinary-angular",
+  "main": "dist/cloudinary-angular.js",
   "author": "Tinus Aamand Norstved",
   "license": "MIT",
   "repository": {
